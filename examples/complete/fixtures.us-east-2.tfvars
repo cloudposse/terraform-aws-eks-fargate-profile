@@ -12,6 +12,6 @@ name = "eks-fargate"
 
 kubeconfig_path = "/.kube/config"
 
-kubernetes_namespace = "default"
+kubernetes_namespace = "kube-system"
 
 kubernetes_labels = {}
