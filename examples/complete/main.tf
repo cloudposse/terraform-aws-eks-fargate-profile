@@ -60,7 +60,7 @@ module "eks_cluster" {
 }
 
 module "eks_node_group" {
-  source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=init"
+  source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.1.0"
   namespace          = var.namespace
   stage              = var.stage
   name               = var.name
