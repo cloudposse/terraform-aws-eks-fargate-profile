@@ -10,8 +10,18 @@ stage = "test"
 
 name = "eks-fargate"
 
+instance_types = ["t3.small"]
+
+desired_size = 2
+
+max_size = 3
+
+min_size = 2
+
+disk_size = 20
+
 kubeconfig_path = "/.kube/config"
 
-kubernetes_namespace = "kube-system"
+kubernetes_namespace = "default"
 
 kubernetes_labels = {}

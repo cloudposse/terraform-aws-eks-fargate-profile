@@ -8,12 +8,17 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 )
+
+func int32Ptr(i int32) *int32 { return &i }
 
 // Test the Terraform module in examples/complete using Terratest.
 func TestExamplesComplete(t *testing.T) {
@@ -54,6 +59,21 @@ func TestExamplesComplete(t *testing.T) {
 	assert.Equal(t, "eg-test-eks-fargate-cluster", eksClusterId)
 
 	// Run `terraform output` to get the value of an output variable
+	eksNodeGroupId := terraform.Output(t, terraformOptions, "eks_node_group_id")
+	// Verify we're getting back the outputs we expect
+	assert.Equal(t, "eg-test-eks-fargate-cluster:eg-test-eks-fargate-workers", eksNodeGroupId)
+
+	// Run `terraform output` to get the value of an output variable
+	eksNodeGroupRoleName := terraform.Output(t, terraformOptions, "eks_node_group_role_name")
+	// Verify we're getting back the outputs we expect
+	assert.Equal(t, "eg-test-eks-fargate-workers", eksNodeGroupRoleName)
+
+	// Run `terraform output` to get the value of an output variable
+	eksNodeGroupStatus := terraform.Output(t, terraformOptions, "eks_node_group_status")
+	// Verify we're getting back the outputs we expect
+	assert.Equal(t, "ACTIVE", eksNodeGroupStatus)
+
+	// Run `terraform output` to get the value of an output variable
 	eksFargateProfileId := terraform.Output(t, terraformOptions, "eks_fargate_profile_id")
 	// Verify we're getting back the outputs we expect
 	assert.Equal(t, "eg-test-eks-fargate-cluster:eg-test-eks-fargate-fargate", eksFargateProfileId)
@@ -68,7 +88,7 @@ func TestExamplesComplete(t *testing.T) {
 	// Verify we're getting back the outputs we expect
 	assert.Equal(t, "ACTIVE", eksFargateProfileStatus)
 
-	// Wait for Fargate worker nodes to join the cluster
+	// Wait for Node Group worker nodes to join the cluster
 	// https://github.com/kubernetes/client-go
 	// https://www.rushtehrani.com/post/using-kubernetes-api
 	// https://rancher.com/using-kubernetes-api-go-kubecon-2017-session-recap
@@ -90,7 +110,7 @@ func TestExamplesComplete(t *testing.T) {
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			node := obj.(*corev1.Node)
-			fmt.Printf("Worker Node %s has joined the EKS cluster at %s\n", node.Name, node.CreationTimestamp)
+			fmt.Printf("Node Group worker node %s has joined the EKS cluster at %s\n", node.Name, node.CreationTimestamp)
 			atomic.AddUint64(&countOfWorkerNodes, 1)
 			if countOfWorkerNodes > 0 {
 				close(stopChannel)
@@ -98,15 +118,104 @@ func TestExamplesComplete(t *testing.T) {
 		},
 	})
 
+	continueAfterNodeGroupNodesJoinedCluster := true
 	go informer.Run(stopChannel)
 
 	select {
 	case <-stopChannel:
-		msg := "Fargate worker nodes have joined the EKS cluster"
+		msg := "All Node Group worker nodes have joined the EKS cluster"
 		fmt.Println(msg)
 	case <-time.After(5 * time.Minute):
-		msg := "Fargate worker nodes have NOT joined the EKS cluster"
+		continueAfterNodeGroupNodesJoinedCluster = false
+		msg := "NOT all Node Group worker nodes have joined the EKS cluster"
 		fmt.Println(msg)
 		assert.Fail(t, msg)
+	}
+
+	if continueAfterNodeGroupNodesJoinedCluster {
+		// Deploy an image to Kubernetes `default` namespace (for which we create a Fargate Profile) and wait for a Fargate node to join the cluster
+		// https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
+		fmt.Println("Creating Kubernetes deployment in the default namespace")
+		deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+
+		deployment := &appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: apiv1.NamespaceDefault,
+				Name:      "demo-deployment",
+			},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: int32Ptr(1),
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app": "demo",
+					},
+				},
+				Template: apiv1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"app": "demo",
+						},
+					},
+					Spec: apiv1.PodSpec{
+						Containers: []apiv1.Container{
+							{
+								Name:  "web",
+								Image: "nginx:1.12",
+								Ports: []apiv1.ContainerPort{
+									{
+										Name:          "http",
+										Protocol:      apiv1.ProtocolTCP,
+										ContainerPort: 80,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		result, err := deploymentsClient.Create(deployment)
+		assert.NoError(t, err)
+		fmt.Printf("Created Kubernetes deployment %q\n", result.GetObjectMeta().GetName())
+
+		fmt.Println("Waiting for a Fargate node to join the EKS cluster")
+		factory := informers.NewSharedInformerFactory(clientset, 0)
+		informer := factory.Core().V1().Nodes().Informer()
+		stopChannel := make(chan struct{})
+
+		informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				node := obj.(*corev1.Node)
+				fmt.Printf("Fargate node %s has joined the EKS cluster at %s\n", node.Name, node.CreationTimestamp)
+				close(stopChannel)
+			},
+		})
+
+		go informer.Run(stopChannel)
+
+		select {
+		case <-stopChannel:
+			fmt.Println("All Fargate nodes has joined the EKS cluster")
+			fmt.Printf("Listing deployments in namespace %q\n", apiv1.NamespaceDefault)
+			list, err := deploymentsClient.List(metav1.ListOptions{})
+			assert.NoError(t, err)
+			for _, d := range list.Items {
+				fmt.Printf(" * %s (%d replicas)\n", d.Name, *d.Spec.Replicas)
+			}
+
+			fmt.Println("Deleting deployment...")
+			deletePolicy := metav1.DeletePropagationForeground
+			err = deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{
+				PropagationPolicy: &deletePolicy,
+			})
+			assert.NoError(t, err)
+			fmt.Println("Deleted deployment")
+
+		case <-time.After(5 * time.Minute):
+			msg := "NOT all Fargate nodes have joined the EKS cluster"
+			fmt.Println(msg)
+			assert.Fail(t, msg)
+		}
 	}
 }

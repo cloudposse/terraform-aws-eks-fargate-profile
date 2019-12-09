@@ -72,3 +72,28 @@ variable "kubernetes_labels" {
   type        = map(string)
   description = "Key-value mapping of Kubernetes labels for selection"
 }
+
+variable "desired_size" {
+  type        = number
+  description = "Desired number of worker nodes"
+}
+
+variable "max_size" {
+  type        = number
+  description = "The maximum size of the AutoScaling Group"
+}
+
+variable "min_size" {
+  type        = number
+  description = "The minimum size of the AutoScaling Group"
+}
+
+variable "disk_size" {
+  type        = number
+  description = "Disk size in GiB for worker nodes. Defaults to 20. Terraform will only perform drift detection if a configuration value is provided"
+}
+
+variable "instance_types" {
+  type        = list(string)
+  description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided"
+}

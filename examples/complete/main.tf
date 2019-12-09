@@ -55,8 +55,25 @@ module "eks_cluster" {
   kubeconfig_path       = var.kubeconfig_path
   oidc_provider_enabled = var.oidc_provider_enabled
 
-  workers_role_arns          = [module.eks_fargate_profile.eks_fargate_profile_role_arn]
+  workers_role_arns          = [module.eks_node_group.eks_node_group_role_arn, module.eks_fargate_profile.eks_fargate_profile_role_arn]
   workers_security_group_ids = []
+}
+
+module "eks_node_group" {
+  source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=init"
+  namespace          = var.namespace
+  stage              = var.stage
+  name               = var.name
+  attributes         = var.attributes
+  tags               = var.tags
+  subnet_ids         = module.subnets.public_subnet_ids
+  instance_types     = var.instance_types
+  desired_size       = var.desired_size
+  min_size           = var.min_size
+  max_size           = var.max_size
+  cluster_name       = module.eks_cluster.eks_cluster_id
+  kubernetes_version = var.kubernetes_version
+  kubernetes_labels  = var.kubernetes_labels
 }
 
 module "eks_fargate_profile" {

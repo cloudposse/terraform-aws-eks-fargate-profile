@@ -38,6 +38,36 @@ output "eks_cluster_identity_oidc_issuer" {
   value       = module.eks_cluster.eks_cluster_identity_oidc_issuer
 }
 
+output "eks_node_group_role_arn" {
+  description = "ARN of the worker nodes IAM role"
+  value       = module.eks_node_group.eks_node_group_role_arn
+}
+
+output "eks_node_group_role_name" {
+  description = "Name of the worker nodes IAM role"
+  value       = module.eks_node_group.eks_node_group_role_name
+}
+
+output "eks_node_group_id" {
+  description = "EKS Cluster name and EKS Node Group name separated by a colon"
+  value       = module.eks_node_group.eks_node_group_id
+}
+
+output "eks_node_group_arn" {
+  description = "Amazon Resource Name (ARN) of the EKS Node Group"
+  value       = module.eks_node_group.eks_node_group_arn
+}
+
+output "eks_node_group_resources" {
+  description = "List of objects containing information about underlying resources of the EKS Node Group"
+  value       = module.eks_node_group.eks_node_group_resources
+}
+
+output "eks_node_group_status" {
+  description = "Status of the EKS Node Group"
+  value       = module.eks_node_group.eks_node_group_status
+}
+
 output "eks_fargate_profile_role_arn" {
   description = "ARN of the EKS Fargate Profile IAM role"
   value       = module.eks_fargate_profile.eks_fargate_profile_role_arn

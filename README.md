@@ -42,7 +42,7 @@
 
 [![Cloud Posse][logo]](https://cpco.io/homepage)
 
-# terraform-aws-eks-fargate-profile [![Codefresh Build Status](https://g.codefresh.io/api/badges/pipeline/cloudposse/terraform-modules%2Fterraform-aws-eks-fargate-profile?type=cf-1)](https://g.codefresh.io/public/accounts/cloudposse/pipelines/5dead6c731a1a7177ed48f8e) [![Latest Release](https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg)](https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+# terraform-aws-eks-fargate-profile [![Codefresh Build Status](https://g.codefresh.io/api/badges/pipeline/cloudposse/terraform-modules%2Fterraform-aws-eks-fargate-profile?type=cf-1)](https://g.codefresh.io/public/accounts/cloudposse/pipelines/5deeced5158ef2a8061fe466) [![Latest Release](https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg)](https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
 
 
 Terraform module to provision an EKS Node Group for [Elastic Container Service for Kubernetes](https://aws.amazon.com/eks/).
@@ -135,7 +135,7 @@ For automated tests of the complete example using [bats](https://github.com/bats
       vpc_id               = module.vpc.vpc_id
       igw_id               = module.vpc.igw_id
       cidr_block           = module.vpc.vpc_cidr_block
-      nat_gateway_enabled  = false
+      nat_gateway_enabled  = true
       nat_instance_enabled = false
       tags                 = local.tags
     }
@@ -154,8 +154,25 @@ For automated tests of the complete example using [bats](https://github.com/bats
       kubeconfig_path       = var.kubeconfig_path
       oidc_provider_enabled = var.oidc_provider_enabled
 
-      workers_role_arns          = [module.eks_fargate_profile.eks_fargate_profile_role_arn]
+      workers_role_arns          = [module.eks_node_group.eks_node_group_role_arn, module.eks_fargate_profile.eks_fargate_profile_role_arn]
       workers_security_group_ids = []
+    }
+
+    module "eks_node_group" {
+      source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.1.0"
+      namespace          = var.namespace
+      stage              = var.stage
+      name               = var.name
+      attributes         = var.attributes
+      tags               = var.tags
+      subnet_ids         = module.subnets.public_subnet_ids
+      instance_types     = var.instance_types
+      desired_size       = var.desired_size
+      min_size           = var.min_size
+      max_size           = var.max_size
+      cluster_name       = module.eks_cluster.eks_cluster_id
+      kubernetes_version = var.kubernetes_version
+      kubernetes_labels  = var.kubernetes_labels
     }
 
     module "eks_fargate_profile" {
