@@ -94,138 +94,105 @@ func TestExamplesComplete(t *testing.T) {
 	// Verify we're getting back the outputs we expect
 	assert.Equal(t, "ACTIVE", eksFargateProfileStatus)
 
-	// Wait for Node Group nodes to join the cluster
+	// Wait for all nodes (two from the Node Group and one Fargate) to join the cluster
 	// https://github.com/kubernetes/client-go
 	// https://www.rushtehrani.com/post/using-kubernetes-api
 	// https://rancher.com/using-kubernetes-api-go-kubecon-2017-session-recap
 	// https://gianarb.it/blog/kubernetes-shared-informer
 	// https://medium.com/@muhammet.arslan/write-your-own-kubernetes-controller-with-informers-9920e8ab6f84
-	fmt.Println("Waiting for Node Group nodes to join the EKS cluster...")
-
 	kubeconfigPath := "/.kube/config"
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	assert.NoError(t, err)
-
 	clientset, err := kubernetes.NewForConfig(config)
 	assert.NoError(t, err)
 
-	factory := informers.NewSharedInformerFactory(clientset, 0)
-	informer := factory.Core().V1().Nodes().Informer()
-	stopChannel := make(chan struct{})
+	// Created Kubernetes deployment in the `default` namespace (for which we create a Fargate Profile)
+	// https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
+	fmt.Println("Creating Kubernetes deployment in the 'default' namespace...")
+	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
-	var countOfWorkerNodes uint64 = 0
-
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			node := obj.(*corev1.Node)
-			fmt.Printf("Node Group node %s has joined the EKS cluster at %s\n", node.Name, node.CreationTimestamp)
-			atomic.AddUint64(&countOfWorkerNodes, 1)
-			if countOfWorkerNodes == 2 {
-				informer = nil
-				close(stopChannel)
-			}
+	deployment := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: apiv1.NamespaceDefault,
+			Name:      "demo-deployment",
 		},
-	})
-
-	continueAfterNodeGroupNodesJoinedCluster := false
-	go informer.Run(stopChannel)
-
-	select {
-	case <-stopChannel:
-		fmt.Println("All Node Group nodes have joined the EKS cluster")
-		continueAfterNodeGroupNodesJoinedCluster = true
-	case <-time.After(5 * time.Minute):
-		msg := "NOT all Node Group nodes have joined the EKS cluster"
-		fmt.Println(msg)
-		assert.Fail(t, msg)
-	}
-
-	if continueAfterNodeGroupNodesJoinedCluster {
-		// Deploy an image to Kubernetes `default` namespace (for which we create a Fargate Profile) and wait for a Fargate node to join the cluster
-		// https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
-		fmt.Println("Creating Kubernetes deployment in the 'default' namespace...")
-		deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
-
-		deployment := &appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: apiv1.NamespaceDefault,
-				Name:      "demo-deployment",
+		Spec: appsv1.DeploymentSpec{
+			Replicas: int32Ptr(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "demo",
+				},
 			},
-			Spec: appsv1.DeploymentSpec{
-				Replicas: int32Ptr(1),
-				Selector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
 						"app": "demo",
 					},
 				},
-				Template: apiv1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: map[string]string{
-							"app": "demo",
-						},
-					},
-					Spec: apiv1.PodSpec{
-						Containers: []apiv1.Container{
-							{
-								Name:  "web",
-								Image: "nginx:1.17",
-								Ports: []apiv1.ContainerPort{
-									{
-										Name:          "http",
-										Protocol:      apiv1.ProtocolTCP,
-										ContainerPort: 80,
-									},
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
+						{
+							Name:  "web",
+							Image: "nginx:1.17",
+							Ports: []apiv1.ContainerPort{
+								{
+									Name:          "http",
+									Protocol:      apiv1.ProtocolTCP,
+									ContainerPort: 80,
 								},
 							},
 						},
 					},
 				},
 			},
-		}
+		},
+	}
 
-		result, err := deploymentsClient.Create(deployment)
-		assert.NoError(t, err)
-		fmt.Printf("Created Kubernetes deployment %q\n", result.GetObjectMeta().GetName())
+	result, err := deploymentsClient.Create(deployment)
+	assert.NoError(t, err)
+	fmt.Printf("Created Kubernetes deployment %q\n", result.GetObjectMeta().GetName())
 
-		fmt.Println("Waiting for a Fargate node to join the EKS cluster...")
-		factory2 := informers.NewSharedInformerFactory(clientset, 0)
-		informer2 := factory2.Core().V1().Nodes().Informer()
-		stopChannel2 := make(chan struct{})
+	fmt.Println("Waiting for worker nodes to join the EKS cluster...")
+	factory := informers.NewSharedInformerFactory(clientset, 0)
+	informer := factory.Core().V1().Nodes().Informer()
+	stopChannel := make(chan struct{})
+	var countOfWorkerNodes uint64 = 0
 
-		informer2.AddEventHandler(cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				node := obj.(*corev1.Node)
-				fmt.Printf("Fargate node %s has joined the EKS cluster at %s\n", node.Name, node.CreationTimestamp)
-				informer2 = nil
-				close(stopChannel2)
-			},
-		})
-
-		go informer2.Run(stopChannel2)
-
-		select {
-		case <-stopChannel2:
-			fmt.Println("All Fargate nodes have joined the EKS cluster")
-			fmt.Printf("Listing deployments in namespace %q\n", apiv1.NamespaceDefault)
-			list, err := deploymentsClient.List(metav1.ListOptions{})
-			assert.NoError(t, err)
-
-			for _, d := range list.Items {
-				fmt.Printf("Deployment %s has %d replicas\n", d.Name, *d.Spec.Replicas)
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			node := obj.(*corev1.Node)
+			fmt.Printf("Node %s has joined the EKS cluster at %s\n", node.Name, node.CreationTimestamp)
+			atomic.AddUint64(&countOfWorkerNodes, 1)
+			if countOfWorkerNodes == 3 {
+				close(stopChannel)
 			}
+		},
+	})
 
-			fmt.Println("Deleting deployment...")
-			deletePolicy := metav1.DeletePropagationForeground
-			err = deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{
-				PropagationPolicy: &deletePolicy,
-			})
-			assert.NoError(t, err)
-			fmt.Println("Deleted deployment")
+	go informer.Run(stopChannel)
 
-		case <-time.After(5 * time.Minute):
-			msg := "NOT all Fargate nodes have joined the EKS cluster"
-			fmt.Println(msg)
-			assert.Fail(t, msg)
+	select {
+	case <-stopChannel:
+		fmt.Println("All nodes have joined the EKS cluster")
+		fmt.Printf("Listing deployments in namespace %q\n", apiv1.NamespaceDefault)
+		list, err := deploymentsClient.List(metav1.ListOptions{})
+		assert.NoError(t, err)
+
+		for _, d := range list.Items {
+			fmt.Printf("Deployment %s has %d replicas\n", d.Name, *d.Spec.Replicas)
 		}
+
+		fmt.Println("Deleting deployment...")
+		deletePolicy := metav1.DeletePropagationForeground
+		err = deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		})
+		assert.NoError(t, err)
+		fmt.Println("Deleted deployment")
+
+	case <-time.After(8 * time.Minute):
+		msg := "NOT all nodes have joined the EKS cluster"
+		fmt.Println(msg)
+		assert.Fail(t, msg)
 	}
 }
