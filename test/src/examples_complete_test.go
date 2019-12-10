@@ -108,7 +108,7 @@ func TestExamplesComplete(t *testing.T) {
 
 	// Created Kubernetes deployment in the `default` namespace (for which we create a Fargate Profile)
 	// https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go
-	fmt.Println("Creating Kubernetes deployment in the 'default' namespace...")
+	fmt.Println("Creating Kubernetes deployment 'demo-deployment' in the 'default' namespace...")
 	deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 
 	deployment := &appsv1.Deployment{
@@ -150,7 +150,7 @@ func TestExamplesComplete(t *testing.T) {
 
 	result, err := deploymentsClient.Create(deployment)
 	assert.NoError(t, err)
-	fmt.Printf("Created Kubernetes deployment %q\n", result.GetObjectMeta().GetName())
+	fmt.Printf("Created Kubernetes deployment '%q'\n", result.GetObjectMeta().GetName())
 
 	fmt.Println("Waiting for worker nodes to join the EKS cluster...")
 	factory := informers.NewSharedInformerFactory(clientset, 0)
@@ -174,21 +174,21 @@ func TestExamplesComplete(t *testing.T) {
 	select {
 	case <-stopChannel:
 		fmt.Println("All nodes have joined the EKS cluster")
-		fmt.Printf("Listing deployments in namespace %q\n", apiv1.NamespaceDefault)
+		fmt.Printf("Listing deployments in namespace '%q':\n", apiv1.NamespaceDefault)
 		list, err := deploymentsClient.List(metav1.ListOptions{})
 		assert.NoError(t, err)
 
 		for _, d := range list.Items {
-			fmt.Printf("Deployment %s has %d replicas\n", d.Name, *d.Spec.Replicas)
+			fmt.Printf("* Deployment '%s' has %d replica(s)\n", d.Name, *d.Spec.Replicas)
 		}
 
-		fmt.Println("Deleting deployment...")
+		fmt.Println("Deleting deployment 'demo-deployment' ...")
 		deletePolicy := metav1.DeletePropagationForeground
 		err = deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		})
 		assert.NoError(t, err)
-		fmt.Println("Deleted deployment")
+		fmt.Println("Deleted deployment 'demo-deployment'")
 
 	case <-time.After(8 * time.Minute):
 		msg := "NOT all nodes have joined the EKS cluster"
