@@ -42,7 +42,7 @@
 
 [![Cloud Posse][logo]](https://cpco.io/homepage)
 
-# terraform-aws-eks-fargate-profile [![Codefresh Build Status](https://g.codefresh.io/api/badges/pipeline/cloudposse/terraform-modules%2Fterraform-aws-eks-fargate-profile?type=cf-1)](https://g.codefresh.io/public/accounts/cloudposse/pipelines/5deeced5158ef2a8061fe466) [![Latest Release](https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg)](https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
+# terraform-aws-eks-fargate-profile [![Latest Release](https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg)](https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
 
 
 Terraform module to provision an EKS Node Group for [Elastic Container Service for Kubernetes](https://aws.amazon.com/eks/).
@@ -204,31 +204,46 @@ Available targets:
   lint                                Lint terraform code
 
 ```
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | ~> 0.12.0 |
+| aws | ~> 2.0 |
+| local | ~> 1.3 |
+| template | ~> 2.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| aws | ~> 2.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-----:|:-----:|
-| attributes | Additional attributes (e.g. `1`) | list(string) | `<list>` | no |
-| cluster_name | The name of the EKS cluster | string | - | yes |
-| delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
-| enabled | Whether to create the resources. Set to `false` to prevent the module from creating any resources | bool | `true` | no |
-| kubernetes_labels | Key-value mapping of Kubernetes labels for selection | map(string) | `<map>` | no |
-| kubernetes_namespace | Kubernetes namespace for selection | string | - | yes |
-| name | Solution name, e.g. 'app' or 'cluster' | string | - | yes |
-| namespace | Namespace, which could be your organization name, e.g. 'eg' or 'cp' | string | `` | no |
-| stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | string | `` | no |
-| subnet_ids | Identifiers of private EC2 Subnets to associate with the EKS Fargate Profile. These subnets must have the following resource tag: kubernetes.io/cluster/CLUSTER_NAME (where CLUSTER_NAME is replaced with the name of the EKS Cluster) | list(string) | - | yes |
-| tags | Additional tags (e.g. `{ BusinessUnit = "XYZ" }` | map(string) | `<map>` | no |
+|------|-------------|------|---------|:--------:|
+| attributes | Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
+| cluster\_name | The name of the EKS cluster | `string` | n/a | yes |
+| delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | `string` | `"-"` | no |
+| enabled | Whether to create the resources. Set to `false` to prevent the module from creating any resources | `bool` | `true` | no |
+| kubernetes\_labels | Key-value mapping of Kubernetes labels for selection | `map(string)` | `{}` | no |
+| kubernetes\_namespace | Kubernetes namespace for selection | `string` | n/a | yes |
+| name | Solution name, e.g. 'app' or 'cluster' | `string` | n/a | yes |
+| namespace | Namespace, which could be your organization name, e.g. 'eg' or 'cp' | `string` | `""` | no |
+| stage | Stage, e.g. 'prod', 'staging', 'dev', or 'test' | `string` | `""` | no |
+| subnet\_ids | Identifiers of private EC2 Subnets to associate with the EKS Fargate Profile. These subnets must have the following resource tag: kubernetes.io/cluster/CLUSTER\_NAME (where CLUSTER\_NAME is replaced with the name of the EKS Cluster) | `list(string)` | n/a | yes |
+| tags | Additional tags (e.g. `{ BusinessUnit = "XYZ" }` | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| eks_fargate_profile_arn | Amazon Resource Name (ARN) of the EKS Fargate Profile |
-| eks_fargate_profile_id | EKS Cluster name and EKS Fargate Profile name separated by a colon |
-| eks_fargate_profile_role_arn | ARN of the EKS Fargate Profile IAM role |
-| eks_fargate_profile_role_name | Name of the EKS Fargate Profile IAM role |
-| eks_fargate_profile_status | Status of the EKS Fargate Profile |
+| eks\_fargate\_profile\_arn | Amazon Resource Name (ARN) of the EKS Fargate Profile |
+| eks\_fargate\_profile\_id | EKS Cluster name and EKS Fargate Profile name separated by a colon |
+| eks\_fargate\_profile\_role\_arn | ARN of the EKS Fargate Profile IAM role |
+| eks\_fargate\_profile\_role\_name | Name of the EKS Fargate Profile IAM role |
+| eks\_fargate\_profile\_status | Status of the EKS Fargate Profile |
 
 
 
@@ -293,6 +308,10 @@ We deliver 10x the value for a fraction of the cost of a full-time engineer. Our
 
 Join our [Open Source Community][slack] on Slack. It's **FREE** for everyone! Our "SweetOps" community is where you get to talk with others who share a similar vision for how to rollout and manage infrastructure. This is the best place to talk shop, ask questions, solicit feedback, and work together as a community to build totally *sweet* infrastructure.
 
+## Discourse Forums
+
+Participate in our [Discourse Forums][discourse]. Here you'll find answers to commonly asked questions. Most questions will be related to the enormous number of projects we support on our GitHub. Come here to collaborate on answers, find solutions, and get ideas about the products and services we value. It only takes a minute to get started! Just sign in with SSO using your GitHub account.
+
 ## Newsletter
 
 Sign up for [our newsletter][newsletter] that covers everything on our technology radar.  Receive updates on what we're up to on GitHub as well as awesome new projects we discover. 
@@ -326,7 +345,7 @@ In general, PRs are welcome. We follow the typical "fork-and-pull" Git workflow.
 
 ## Copyright
 
-Copyright © 2017-2019 [Cloud Posse, LLC](https://cpco.io/copyright)
+Copyright © 2017-2020 [Cloud Posse, LLC](https://cpco.io/copyright)
 
 
 
@@ -406,6 +425,7 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
   [testimonial]: https://cpco.io/leave-testimonial?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=testimonial
   [office_hours]: https://cloudposse.com/office-hours?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=office_hours
   [newsletter]: https://cpco.io/newsletter?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=newsletter
+  [discourse]: https://ask.sweetops.com/?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=discourse
   [email]: https://cpco.io/email?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=email
   [commercial_support]: https://cpco.io/commercial-support?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=commercial_support
   [we_love_open_source]: https://cpco.io/we-love-open-source?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-eks-fargate-profile&utm_content=we_love_open_source
