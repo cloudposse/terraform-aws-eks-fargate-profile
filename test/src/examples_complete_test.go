@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"sync/atomic"
@@ -148,7 +149,7 @@ func TestExamplesComplete(t *testing.T) {
 		},
 	}
 
-	result, err := deploymentsClient.Create(deployment)
+	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	fmt.Printf("Created Kubernetes deployment '%q'\n", result.GetObjectMeta().GetName())
 
@@ -175,7 +176,7 @@ func TestExamplesComplete(t *testing.T) {
 	case <-stopChannel:
 		fmt.Println("All nodes have joined the EKS cluster")
 		fmt.Printf("Listing deployments in namespace '%q':\n", apiv1.NamespaceDefault)
-		list, err := deploymentsClient.List(metav1.ListOptions{})
+		list, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
 		assert.NoError(t, err)
 
 		for _, d := range list.Items {
@@ -184,7 +185,7 @@ func TestExamplesComplete(t *testing.T) {
 
 		fmt.Println("Deleting deployment 'demo-deployment' ...")
 		deletePolicy := metav1.DeletePropagationForeground
-		err = deploymentsClient.Delete("demo-deployment", &metav1.DeleteOptions{
+		err = deploymentsClient.Delete(context.TODO(), "demo-deployment", metav1.DeleteOptions{
 			PropagationPolicy: &deletePolicy,
 		})
 		assert.NoError(t, err)
