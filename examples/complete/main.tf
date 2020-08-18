@@ -42,19 +42,18 @@ module "subnets" {
 }
 
 module "eks_cluster" {
-  source                = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.25.0"
-  namespace             = var.namespace
-  stage                 = var.stage
-  name                  = var.name
-  attributes            = var.attributes
-  tags                  = var.tags
-  region                = var.region
-  vpc_id                = module.vpc.vpc_id
-  subnet_ids            = module.subnets.public_subnet_ids
-  kubernetes_version    = var.kubernetes_version
-  oidc_provider_enabled = var.oidc_provider_enabled
-
-  workers_role_arns          = [module.eks_node_group.eks_node_group_role_arn, module.eks_fargate_profile.eks_fargate_profile_role_arn]
+  source                     = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.25.0"
+  namespace                  = var.namespace
+  stage                      = var.stage
+  name                       = var.name
+  attributes                 = var.attributes
+  tags                       = var.tags
+  region                     = var.region
+  vpc_id                     = module.vpc.vpc_id
+  subnet_ids                 = module.subnets.public_subnet_ids
+  kubernetes_version         = var.kubernetes_version
+  oidc_provider_enabled      = var.oidc_provider_enabled
+  workers_role_arns          = []
   workers_security_group_ids = []
 }
 
