@@ -2,8 +2,10 @@ package test
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/rest"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -17,10 +19,46 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
+
+	"sigs.k8s.io/aws-iam-authenticator/pkg/token"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/eks"
 )
 
 func int32Ptr(i int32) *int32 { return &i }
+
+func newClientset(cluster *eks.Cluster) (*kubernetes.Clientset, error) {
+	gen, err := token.NewGenerator(true, false)
+	if err != nil {
+		return nil, err
+	}
+	opts := &token.GetTokenOptions{
+		ClusterID: aws.StringValue(cluster.Name),
+	}
+	tok, err := gen.GetWithOptions(opts)
+	if err != nil {
+		return nil, err
+	}
+	ca, err := base64.StdEncoding.DecodeString(aws.StringValue(cluster.CertificateAuthority.Data))
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(
+		&rest.Config{
+			Host:        aws.StringValue(cluster.Endpoint),
+			BearerToken: tok.Token,
+			TLSClientConfig: rest.TLSClientConfig{
+				CAData: ca,
+			},
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return clientset, nil
+}
 
 // Test the Terraform module in examples/complete using Terratest.
 func TestExamplesComplete(t *testing.T) {
@@ -95,16 +133,31 @@ func TestExamplesComplete(t *testing.T) {
 	// Verify we're getting back the outputs we expect
 	assert.Equal(t, "ACTIVE", eksFargateProfileStatus)
 
-	// Wait for all nodes (two from the Node Group and one Fargate) to join the cluster
+	// Wait for the worker nodes to join the cluster
 	// https://github.com/kubernetes/client-go
 	// https://www.rushtehrani.com/post/using-kubernetes-api
 	// https://rancher.com/using-kubernetes-api-go-kubecon-2017-session-recap
 	// https://gianarb.it/blog/kubernetes-shared-informer
-	// https://medium.com/@muhammet.arslan/write-your-own-kubernetes-controller-with-informers-9920e8ab6f84
-	kubeconfigPath := "/.kube/config"
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	// https://stackoverflow.com/questions/60547409/unable-to-obtain-kubeconfig-of-an-aws-eks-cluster-in-go-code/60573982#60573982
+	fmt.Println("Waiting for worker nodes to join the EKS cluster")
+
+	clusterName := "eg-test-eks-fargate-cluster"
+	region := "us-east-2"
+
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(region),
+	}))
+
+	eksSvc := eks.New(sess)
+
+	input := &eks.DescribeClusterInput{
+		Name: aws.String(clusterName),
+	}
+
+	result, err := eksSvc.DescribeCluster(input)
 	assert.NoError(t, err)
-	clientset, err := kubernetes.NewForConfig(config)
+
+	clientset, err := newClientset(result.Cluster)
 	assert.NoError(t, err)
 
 	// Created Kubernetes deployment in the `default` namespace (for which we create a Fargate Profile)
@@ -149,9 +202,9 @@ func TestExamplesComplete(t *testing.T) {
 		},
 	}
 
-	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+	deploymentClient, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	fmt.Printf("Created Kubernetes deployment '%q'\n", result.GetObjectMeta().GetName())
+	fmt.Printf("Created Kubernetes deployment '%q'\n", deploymentClient.GetObjectMeta().GetName())
 
 	fmt.Println("Waiting for worker nodes to join the EKS cluster...")
 	factory := informers.NewSharedInformerFactory(clientset, 0)
