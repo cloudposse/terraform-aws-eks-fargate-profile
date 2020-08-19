@@ -3,13 +3,14 @@ provider "aws" {
 }
 
 module "label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
-  namespace  = var.namespace
-  name       = var.name
-  stage      = var.stage
-  delimiter  = var.delimiter
-  attributes = compact(concat(var.attributes, list("cluster")))
-  tags       = var.tags
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
+  namespace   = var.namespace
+  environment = var.environment
+  name        = var.name
+  stage       = var.stage
+  delimiter   = var.delimiter
+  attributes  = compact(concat(var.attributes, list("cluster")))
+  tags        = var.tags
 }
 
 locals {
@@ -17,7 +18,7 @@ locals {
 }
 
 module "vpc" {
-  source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.8.1"
+  source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.16.1"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -27,7 +28,7 @@ module "vpc" {
 }
 
 module "subnets" {
-  source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.18.1"
+  source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.26.0"
   availability_zones   = var.availability_zones
   namespace            = var.namespace
   stage                = var.stage
@@ -42,7 +43,7 @@ module "subnets" {
 }
 
 module "eks_cluster" {
-  source                     = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.25.0"
+  source                     = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.26.1"
   namespace                  = var.namespace
   stage                      = var.stage
   name                       = var.name
@@ -70,7 +71,7 @@ data "null_data_source" "wait_for_cluster_and_kubernetes_configmap" {
 }
 
 module "eks_node_group" {
-  source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.6.0"
+  source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.7.1"
   namespace          = var.namespace
   stage              = var.stage
   name               = var.name

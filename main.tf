@@ -8,14 +8,15 @@ locals {
 }
 
 module "label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
-  namespace  = var.namespace
-  stage      = var.stage
-  name       = var.name
-  delimiter  = var.delimiter
-  attributes = compact(concat(var.attributes, ["fargate"]))
-  tags       = local.tags
-  enabled    = var.enabled
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
+  namespace   = var.namespace
+  environment = var.environment
+  stage       = var.stage
+  name        = var.name
+  delimiter   = var.delimiter
+  attributes  = compact(concat(var.attributes, ["fargate"]))
+  tags        = local.tags
+  enabled     = var.enabled
 }
 
 data "aws_iam_policy_document" "assume_role" {
