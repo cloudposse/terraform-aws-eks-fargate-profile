@@ -21,6 +21,7 @@
 | cluster\_name | The name of the EKS cluster | `string` | n/a | yes |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | `string` | `"-"` | no |
 | enabled | Whether to create the resources. Set to `false` to prevent the module from creating any resources | `bool` | `true` | no |
+| environment | Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT' | `string` | `""` | no |
 | kubernetes\_labels | Key-value mapping of Kubernetes labels for selection | `map(string)` | `{}` | no |
 | kubernetes\_namespace | Kubernetes namespace for selection | `string` | n/a | yes |
 | name | Solution name, e.g. 'app' or 'cluster' | `string` | n/a | yes |
