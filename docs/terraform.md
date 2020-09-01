@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -40,3 +41,4 @@
 | eks\_fargate\_profile\_role\_name | Name of the EKS Fargate Profile IAM role |
 | eks\_fargate\_profile\_status | Status of the EKS Fargate Profile |
 
+<!-- markdownlint-restore -->

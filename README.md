@@ -186,6 +186,7 @@ Available targets:
 
 ```
 <!-- markdownlint-restore -->
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -228,6 +229,7 @@ Available targets:
 | eks\_fargate\_profile\_role\_name | Name of the EKS Fargate Profile IAM role |
 | eks\_fargate\_profile\_status | Status of the EKS Fargate Profile |
 
+<!-- markdownlint-restore -->
 
 
 
