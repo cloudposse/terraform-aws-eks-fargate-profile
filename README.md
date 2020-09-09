@@ -186,11 +186,12 @@ Available targets:
 
 ```
 <!-- markdownlint-restore -->
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 0.12.0 |
+| terraform | >= 0.12.0, < 0.14.0 |
 | aws | ~> 2.0 |
 | local | ~> 1.3 |
 | template | ~> 2.0 |
@@ -228,6 +229,7 @@ Available targets:
 | eks\_fargate\_profile\_role\_name | Name of the EKS Fargate Profile IAM role |
 | eks\_fargate\_profile\_status | Status of the EKS Fargate Profile |
 
+<!-- markdownlint-restore -->
 
 
 
