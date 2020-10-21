@@ -59,3 +59,8 @@ variable "instance_types" {
   type        = list(string)
   description = "Set of instance types associated with the EKS Node Group. Defaults to [\"t3.medium\"]. Terraform will only perform drift detection if a configuration value is provided"
 }
+
+variable "iam_role_kubernetes_namespace_delimiter" {
+  type        = string
+  description = "Delimiter for the Kubernetes namespace in the IAM Role name"
+}

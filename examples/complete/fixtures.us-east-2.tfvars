@@ -25,3 +25,5 @@ disk_size = 20
 kubernetes_namespace = "default"
 
 kubernetes_labels = {}
+
+iam_role_kubernetes_namespace_delimiter = "@"

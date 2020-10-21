@@ -18,3 +18,9 @@ variable "kubernetes_labels" {
   description = "Key-value mapping of Kubernetes labels for selection"
   default     = {}
 }
+
+variable "iam_role_kubernetes_namespace_delimiter" {
+  type        = string
+  description = "Delimiter for the Kubernetes namespace in the IAM Role name"
+  default     = "-"
+}

@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "assume_role" {
 
 resource "aws_iam_role" "default" {
   count              = module.this.enabled ? 1 : 0
-  name               = "${module.label.id}${module.label.delimiter}${var.kubernetes_namespace}"
+  name               = "${module.label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}"
   assume_role_policy = join("", data.aws_iam_policy_document.assume_role.*.json)
   tags               = module.label.tags
 }

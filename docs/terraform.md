@@ -26,6 +26,7 @@
 | delimiter | Delimiter to be used between `namespace`, `environment`, `stage`, `name` and `attributes`.<br>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
 | enabled | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | environment | Environment, e.g. 'uw2', 'us-west-2', OR 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
+| iam\_role\_kubernetes\_namespace\_delimiter | Delimiter for the Kubernetes namespace in the IAM Role name | `string` | `"-"` | no |
 | id\_length\_limit | Limit `id` to this many characters.<br>Set to `0` for unlimited length.<br>Set to `null` for default, which is `0`.<br>Does not affect `id_full`. | `number` | `null` | no |
 | kubernetes\_labels | Key-value mapping of Kubernetes labels for selection | `map(string)` | `{}` | no |
 | kubernetes\_namespace | Kubernetes namespace for selection | `string` | n/a | yes |

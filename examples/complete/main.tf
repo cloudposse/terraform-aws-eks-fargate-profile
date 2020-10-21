@@ -81,10 +81,11 @@ module "eks_node_group" {
 module "eks_fargate_profile" {
   source = "../../"
 
-  subnet_ids           = module.subnets.private_subnet_ids
-  cluster_name         = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
-  kubernetes_namespace = var.kubernetes_namespace
-  kubernetes_labels    = var.kubernetes_labels
+  subnet_ids                              = module.subnets.private_subnet_ids
+  cluster_name                            = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
+  kubernetes_namespace                    = var.kubernetes_namespace
+  kubernetes_labels                       = var.kubernetes_labels
+  iam_role_kubernetes_namespace_delimiter = var.iam_role_kubernetes_namespace_delimiter
 
   context = module.this.context
 }
