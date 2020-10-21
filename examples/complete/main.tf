@@ -3,14 +3,11 @@ provider "aws" {
 }
 
 module "label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
-  namespace   = var.namespace
-  environment = var.environment
-  name        = var.name
-  stage       = var.stage
-  delimiter   = var.delimiter
-  attributes  = compact(concat(var.attributes, list("cluster")))
-  tags        = var.tags
+  source = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
+
+  attributes = compact(concat(module.this.attributes, ["cluster"]))
+
+  context = module.this.context
 }
 
 locals {
@@ -18,37 +15,31 @@ locals {
 }
 
 module "vpc" {
-  source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.16.1"
-  namespace  = var.namespace
-  stage      = var.stage
-  name       = var.name
-  attributes = var.attributes
+  source = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.17.0"
+
   cidr_block = var.vpc_cidr_block
   tags       = local.tags
+
+  context = module.this.context
 }
 
 module "subnets" {
-  source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.26.0"
+  source = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.30.0"
+
   availability_zones   = var.availability_zones
-  namespace            = var.namespace
-  stage                = var.stage
-  name                 = var.name
-  attributes           = var.attributes
   vpc_id               = module.vpc.vpc_id
   igw_id               = module.vpc.igw_id
   cidr_block           = module.vpc.vpc_cidr_block
   nat_gateway_enabled  = true
   nat_instance_enabled = false
   tags                 = local.tags
+
+  context = module.this.context
 }
 
 module "eks_cluster" {
-  source                     = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.26.1"
-  namespace                  = var.namespace
-  stage                      = var.stage
-  name                       = var.name
-  attributes                 = var.attributes
-  tags                       = var.tags
+  source = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.29.0"
+
   region                     = var.region
   vpc_id                     = module.vpc.vpc_id
   subnet_ids                 = module.subnets.public_subnet_ids
@@ -56,6 +47,8 @@ module "eks_cluster" {
   oidc_provider_enabled      = var.oidc_provider_enabled
   workers_role_arns          = []
   workers_security_group_ids = []
+
+  context = module.this.context
 }
 
 # Ensure ordering of resource creation to eliminate the race conditions when applying the Kubernetes Auth ConfigMap.
@@ -71,12 +64,8 @@ data "null_data_source" "wait_for_cluster_and_kubernetes_configmap" {
 }
 
 module "eks_node_group" {
-  source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.7.1"
-  namespace          = var.namespace
-  stage              = var.stage
-  name               = var.name
-  attributes         = var.attributes
-  tags               = var.tags
+  source = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.13.0"
+
   subnet_ids         = module.subnets.public_subnet_ids
   instance_types     = var.instance_types
   desired_size       = var.desired_size
@@ -85,17 +74,17 @@ module "eks_node_group" {
   cluster_name       = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
   kubernetes_version = var.kubernetes_version
   kubernetes_labels  = var.kubernetes_labels
+
+  context = module.this.context
 }
 
 module "eks_fargate_profile" {
-  source               = "../../"
-  namespace            = var.namespace
-  stage                = var.stage
-  name                 = var.name
-  attributes           = var.attributes
-  tags                 = var.tags
+  source = "../../"
+
   subnet_ids           = module.subnets.private_subnet_ids
   cluster_name         = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
   kubernetes_namespace = var.kubernetes_namespace
   kubernetes_labels    = var.kubernetes_labels
+
+  context = module.this.context
 }

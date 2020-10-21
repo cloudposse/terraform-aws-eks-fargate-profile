@@ -10,8 +10,10 @@ name: terraform-aws-eks-fargate-profile
 
 # License of this project
 license: "APACHE2"
+
 # Canonical GitHub repo
 github_repo: cloudposse/terraform-aws-eks-fargate-profile
+
 # Badges to display
 badges:
   - name: "Latest Release"
@@ -20,6 +22,7 @@ badges:
   - name: "Slack Community"
     image: "https://slack.cloudposse.com/badge.svg"
     url: "https://slack.cloudposse.com"
+
 related:
   - name: "terraform-aws-eks-cluster"
     description: "Terraform module to provision an EKS cluster on AWS"
@@ -57,114 +60,111 @@ related:
   - name: "terraform-aws-ec2-instance-group"
     description: "Terraform module for provisioning multiple general purpose EC2 hosts for stateful applications"
     url: "https://github.com/cloudposse/terraform-aws-ec2-instance-group"
+
 # Short description of this project
 description: |-
   Terraform module to provision an EKS Node Group for [Elastic Container Service for Kubernetes](https://aws.amazon.com/eks/).
 
   Instantiate it multiple times to create many EKS node groups with specific settings such as GPUs, EC2 instance types, or autoscale parameters.
+
 introduction: ""
 # How to use this project
+
 usage: |2-
 
   For a complete example, see [examples/complete](examples/complete).
 
-  For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
+  For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest)
+  (which tests and deploys the example on AWS), see [test](test).
 
   ```hcl
-      provider "aws" {
-        region = var.region
-      }
+        module "label" {
+          source = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
 
-      module "label" {
-        source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
-        namespace  = var.namespace
-        name       = var.name
-        stage      = var.stage
-        delimiter  = var.delimiter
-        attributes = compact(concat(var.attributes, list("cluster")))
-        tags       = var.tags
+          attributes = compact(concat(module.this.attributes, ["cluster"]))
+
+          context = module.this.context
       }
 
       locals {
-        tags = merge(module.label.tags, map("kubernetes.io/cluster/${module.label.id}", "shared"))
+          tags = merge(module.label.tags, map("kubernetes.io/cluster/${module.label.id}", "shared"))
       }
 
       module "vpc" {
-        source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.8.1"
-        namespace  = var.namespace
-        stage      = var.stage
-        name       = var.name
-        attributes = var.attributes
+        source = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.17.0"
+
         cidr_block = var.vpc_cidr_block
         tags       = local.tags
+
+        context = module.this.context
       }
 
       module "subnets" {
-        source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.18.1"
+        source = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.30.0"
+
         availability_zones   = var.availability_zones
-        namespace            = var.namespace
-        stage                = var.stage
-        name                 = var.name
-        attributes           = var.attributes
         vpc_id               = module.vpc.vpc_id
         igw_id               = module.vpc.igw_id
         cidr_block           = module.vpc.vpc_cidr_block
         nat_gateway_enabled  = true
         nat_instance_enabled = false
         tags                 = local.tags
+
+        context = module.this.context
       }
 
       module "eks_cluster" {
-        source                = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.13.0"
-        namespace             = var.namespace
-        stage                 = var.stage
-        name                  = var.name
-        attributes            = var.attributes
-        tags                  = var.tags
-        region                = var.region
-        vpc_id                = module.vpc.vpc_id
-        subnet_ids            = module.subnets.public_subnet_ids
-        kubernetes_version    = var.kubernetes_version
-        kubeconfig_path       = var.kubeconfig_path
-        oidc_provider_enabled = var.oidc_provider_enabled
+        source = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.29.0"
 
-        workers_role_arns          = [module.eks_node_group.eks_node_group_role_arn, module.eks_fargate_profile.eks_fargate_profile_role_arn]
+        region                     = var.region
+        vpc_id                     = module.vpc.vpc_id
+        subnet_ids                 = module.subnets.public_subnet_ids
+        kubernetes_version         = var.kubernetes_version
+        oidc_provider_enabled      = var.oidc_provider_enabled
+        workers_role_arns          = []
         workers_security_group_ids = []
+
+        context = module.this.context
+      }
+
+      data "null_data_source" "wait_for_cluster_and_kubernetes_configmap" {
+        inputs = {
+          cluster_name             = module.eks_cluster.eks_cluster_id
+          kubernetes_config_map_id = module.eks_cluster.kubernetes_config_map_id
+        }
       }
 
       module "eks_node_group" {
-        source             = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.1.0"
-        namespace          = var.namespace
-        stage              = var.stage
-        name               = var.name
-        attributes         = var.attributes
-        tags               = var.tags
+        source = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.13.0"
+
         subnet_ids         = module.subnets.public_subnet_ids
         instance_types     = var.instance_types
         desired_size       = var.desired_size
         min_size           = var.min_size
         max_size           = var.max_size
-        cluster_name       = module.eks_cluster.eks_cluster_id
+        cluster_name       = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
         kubernetes_version = var.kubernetes_version
         kubernetes_labels  = var.kubernetes_labels
+
+        context = module.this.context
       }
 
       module "eks_fargate_profile" {
-        source               = "git::https://github.com/cloudposse/terraform-aws-eks-fargate-profile.git?ref=master"
-        namespace            = var.namespace
-        stage                = var.stage
-        name                 = var.name
-        attributes           = var.attributes
-        tags                 = var.tags
+        source = "git::https://github.com/cloudposse/terraform-aws-eks-fargate-profile.git?ref=master"
+
         subnet_ids           = module.subnets.private_subnet_ids
-        cluster_name         = module.eks_cluster.eks_cluster_id
+        cluster_name         = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
         kubernetes_namespace = var.kubernetes_namespace
         kubernetes_labels    = var.kubernetes_labels
+
+        context = module.this.context
       }
   ```
+
 include:
   - "docs/targets.md"
   - "docs/terraform.md"
+
 # Contributors to this project
 contributors:
   - name: "Erik Osterman"
