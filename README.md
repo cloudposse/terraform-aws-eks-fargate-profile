@@ -135,7 +135,7 @@ For automated tests of the complete example using [bats](https://github.com/bats
   }
 
   module "eks_node_group" {
-    source = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.13.0"
+    source = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.8.0"
 
     subnet_ids         = module.subnets.public_subnet_ids
     instance_types     = var.instance_types
