@@ -1,3 +1,5 @@
+enabled = true
+
 region = "us-east-2"
 
 availability_zones = ["us-east-2a", "us-east-2b"]
@@ -23,3 +25,5 @@ disk_size = 20
 kubernetes_namespace = "default"
 
 kubernetes_labels = {}
+
+iam_role_kubernetes_namespace_delimiter = "@"
