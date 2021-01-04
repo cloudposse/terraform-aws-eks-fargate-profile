@@ -3,7 +3,8 @@ provider "aws" {
 }
 
 module "label" {
-  source = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
+  source  = "cloudposse/label/null"
+  version = "0.19.2"
 
   attributes = compact(concat(module.this.attributes, ["cluster"]))
 
@@ -15,7 +16,8 @@ locals {
 }
 
 module "vpc" {
-  source = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.17.0"
+  source  = "cloudposse/vpc/aws"
+  version = "0.17.0"
 
   cidr_block = var.vpc_cidr_block
   tags       = local.tags
@@ -24,7 +26,8 @@ module "vpc" {
 }
 
 module "subnets" {
-  source = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.30.0"
+  source  = "cloudposse/dynamic-subnets/aws"
+  version = "0.30.0"
 
   availability_zones   = var.availability_zones
   vpc_id               = module.vpc.vpc_id
@@ -38,7 +41,8 @@ module "subnets" {
 }
 
 module "eks_cluster" {
-  source = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.29.0"
+  source  = "cloudposse/eks-cluster/aws"
+  version = "0.29.0"
 
   region                     = var.region
   vpc_id                     = module.vpc.vpc_id
@@ -64,7 +68,8 @@ data "null_data_source" "wait_for_cluster_and_kubernetes_configmap" {
 }
 
 module "eks_node_group" {
-  source = "git::https://github.com/cloudposse/terraform-aws-eks-node-group.git?ref=tags/0.8.0"
+  source  = "cloudposse/eks-node-group/aws"
+  version = "0.8.0"
 
   subnet_ids         = module.subnets.public_subnet_ids
   instance_types     = var.instance_types

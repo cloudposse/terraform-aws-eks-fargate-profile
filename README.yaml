@@ -150,7 +150,9 @@ usage: |2-
     }
 
     module "eks_fargate_profile" {
-      source = "git::https://github.com/cloudposse/terraform-aws-eks-fargate-profile.git?ref=master"
+      source = "cloudposse/eks-fargate-profile/aws"
+      # Cloud Posse recommends pinning every module to a specific version
+      # version     = "x.x.x"
 
       subnet_ids                              = module.subnets.private_subnet_ids
       cluster_name                            = data.null_data_source.wait_for_cluster_and_kubernetes_configmap.outputs["cluster_name"]
