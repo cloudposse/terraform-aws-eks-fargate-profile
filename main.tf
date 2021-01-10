@@ -5,6 +5,7 @@ locals {
       "kubernetes.io/cluster/${var.cluster_name}" = "owned"
     }
   )
+  kubernetes_namespaces = split(",", var.kubernetes_namespace)
 }
 
 module "label" {
@@ -32,7 +33,7 @@ data "aws_iam_policy_document" "assume_role" {
 
 resource "aws_iam_role" "default" {
   count              = module.this.enabled ? 1 : 0
-  name               = "${module.label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}"
+  name               = "${module.label.id}${var.iam_role_kubernetes_namespace_delimiter}${local.kubernetes_namespaces[0]}"
   assume_role_policy = join("", data.aws_iam_policy_document.assume_role.*.json)
   tags               = module.label.tags
 }
@@ -51,8 +52,10 @@ resource "aws_eks_fargate_profile" "default" {
   subnet_ids             = var.subnet_ids
   tags                   = module.label.tags
 
-  selector {
-    namespace = var.kubernetes_namespace
-    labels    = var.kubernetes_labels
+  dynamic "selector" {
+    for_each = local.kubernetes_namespaces
+    content {
+      namespace = selector.value
+    }
   }
 }
