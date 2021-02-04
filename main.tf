@@ -8,7 +8,8 @@ locals {
 }
 
 module "label" {
-  source = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
+  source  = "cloudposse/label/null"
+  version = "0.19.2"
 
   attributes = compact(concat(module.this.attributes, ["fargate"]))
   tags       = local.tags
