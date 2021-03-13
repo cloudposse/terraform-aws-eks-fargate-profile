@@ -32,10 +32,11 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "default" {
-  count              = module.this.enabled ? 1 : 0
-  name               = "${module.label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}"
-  assume_role_policy = join("", data.aws_iam_policy_document.assume_role.*.json)
-  tags               = module.label.tags
+  count                = module.this.enabled ? 1 : 0
+  name                 = "${module.label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}"
+  assume_role_policy   = join("", data.aws_iam_policy_document.assume_role.*.json)
+  tags                 = module.label.tags
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "amazon_eks_fargate_pod_execution_role_policy" {
