@@ -24,3 +24,9 @@ variable "iam_role_kubernetes_namespace_delimiter" {
   description = "Delimiter for the Kubernetes namespace in the IAM Role name"
   default     = "-"
 }
+
+variable "permissions_boundary" {
+  type        = string
+  default     = null
+  description = "If provided, all IAM roles will be created with this permissions boundary attached."
+}
