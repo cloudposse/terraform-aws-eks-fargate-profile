@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 locals {
   tags = merge(
     module.this.tags,
@@ -41,7 +43,7 @@ resource "aws_iam_role" "default" {
 
 resource "aws_iam_role_policy_attachment" "amazon_eks_fargate_pod_execution_role_policy" {
   count      = module.this.enabled ? 1 : 0
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
   role       = join("", aws_iam_role.default.*.name)
 }
 
