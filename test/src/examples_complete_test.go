@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/gruntwork-io/terratest/modules/random"
+	teststructure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/rest"
-	"math/rand"
-	"strconv"
+	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -62,28 +64,37 @@ func newClientset(cluster *eks.Cluster) (*kubernetes.Clientset, error) {
 	return clientset, nil
 }
 
+func cleanup(t *testing.T, terraformOptions *terraform.Options, tempTestFolder string) {
+	terraform.Destroy(t, terraformOptions)
+	err := os.RemoveAll(tempTestFolder)
+	assert.NoError(t, err)
+}
+
 // Test the Terraform module in examples/complete using Terratest.
 func TestExamplesComplete(t *testing.T) {
 	t.Parallel()
+	randID := strings.ToLower(random.UniqueId())
+	attributes := []string{randID}
 
-	rand.Seed(time.Now().UnixNano())
+	rootFolder := "../../"
+	terraformFolderRelativeToRoot := "examples/complete"
+	varFiles := []string{"fixtures.us-east-2.tfvars"}
 
-	randId := strconv.Itoa(rand.Intn(100000))
-	attributes := []string{randId}
+	tempTestFolder := teststructure.CopyTerraformFolderToTemp(t, rootFolder, terraformFolderRelativeToRoot)
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../../examples/complete",
+		TerraformDir: tempTestFolder,
 		Upgrade:      true,
 		// Variables to pass to our Terraform code using -var-file options
-		VarFiles: []string{"fixtures.us-east-2.tfvars"},
+		VarFiles: varFiles,
 		Vars: map[string]interface{}{
 			"attributes": attributes,
 		},
 	}
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
-	defer terraform.Destroy(t, terraformOptions)
+	defer cleanup(t, terraformOptions, tempTestFolder)
 
 	// If Go runtime crushes, run `terraform destroy` to clean up any resources that were created
 	defer runtime.HandleCrash(func(i interface{}) {
@@ -111,17 +122,17 @@ func TestExamplesComplete(t *testing.T) {
 	// Run `terraform output` to get the value of an output variable
 	eksClusterId := terraform.Output(t, terraformOptions, "eks_cluster_id")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, "eg-test-eks-fargate-"+randId+"-cluster", eksClusterId)
+	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-cluster", eksClusterId)
 
 	// Run `terraform output` to get the value of an output variable
 	eksNodeGroupId := terraform.Output(t, terraformOptions, "eks_node_group_id")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, "eg-test-eks-fargate-"+randId+"-cluster:eg-test-eks-fargate-"+randId+"-workers", eksNodeGroupId)
+	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-cluster:eg-test-eks-fargate-"+randID+"-workers", eksNodeGroupId)
 
 	// Run `terraform output` to get the value of an output variable
 	eksNodeGroupRoleName := terraform.Output(t, terraformOptions, "eks_node_group_role_name")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, "eg-test-eks-fargate-"+randId+"-workers", eksNodeGroupRoleName)
+	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-workers", eksNodeGroupRoleName)
 
 	// Run `terraform output` to get the value of an output variable
 	eksNodeGroupStatus := terraform.Output(t, terraformOptions, "eks_node_group_status")
@@ -131,12 +142,12 @@ func TestExamplesComplete(t *testing.T) {
 	// Run `terraform output` to get the value of an output variable
 	eksFargateProfileId := terraform.Output(t, terraformOptions, "eks_fargate_profile_id")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, "eg-test-eks-fargate-"+randId+"-cluster:eg-test-eks-fargate-"+randId+"-fargate", eksFargateProfileId)
+	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-cluster:eg-test-eks-fargate-"+randID+"-fargate", eksFargateProfileId)
 
 	// Run `terraform output` to get the value of an output variable
 	eksFargateProfileRoleName := terraform.Output(t, terraformOptions, "eks_fargate_profile_role_name")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, "eg-test-eks-fargate-"+randId+"-fargate@default", eksFargateProfileRoleName)
+	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-fargate@default", eksFargateProfileRoleName)
 
 	// Run `terraform output` to get the value of an output variable
 	eksFargateProfileStatus := terraform.Output(t, terraformOptions, "eks_fargate_profile_status")
@@ -151,7 +162,7 @@ func TestExamplesComplete(t *testing.T) {
 	// https://stackoverflow.com/questions/60547409/unable-to-obtain-kubeconfig-of-an-aws-eks-cluster-in-go-code/60573982#60573982
 	fmt.Println("Waiting for worker nodes to join the EKS cluster...")
 
-	clusterName := "eg-test-eks-fargate-" + randId + "-cluster"
+	clusterName := "eg-test-eks-fargate-" + randID + "-cluster"
 	region := "us-east-2"
 
 	sess := session.Must(session.NewSession(&aws.Config{
@@ -258,4 +269,46 @@ func TestExamplesComplete(t *testing.T) {
 		fmt.Println(msg)
 		assert.Fail(t, msg)
 	}
+}
+
+func TestExamplesCompleteDisabled(t *testing.T) {
+	t.Parallel()
+	randID := strings.ToLower(random.UniqueId())
+	attributes := []string{randID}
+
+	rootFolder := "../../"
+	terraformFolderRelativeToRoot := "examples/complete"
+	varFiles := []string{"fixtures.us-east-2.tfvars"}
+
+	tempTestFolder := teststructure.CopyTerraformFolderToTemp(t, rootFolder, terraformFolderRelativeToRoot)
+
+	terraformOptions := &terraform.Options{
+		// The path to where our Terraform code is located
+		TerraformDir: tempTestFolder,
+		Upgrade:      true,
+		// Variables to pass to our Terraform code using -var-file options
+		VarFiles: varFiles,
+		Vars: map[string]interface{}{
+			"attributes": attributes,
+			"enabled":    "false",
+		},
+	}
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer cleanup(t, terraformOptions, tempTestFolder)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.InitAndApply(t, terraformOptions)
+
+	// Get all the output and lookup a field. Pass if the field is missing or empty.
+	eksClusterArn := terraform.OutputAll(t, terraformOptions)["eks_cluster_arn"]
+	assert.Empty(t, eksClusterArn, "When disabled, module should have no outputs.")
+
+	// Get all the output and lookup a field. Pass if the field is missing or empty.
+	eksNodeGroupArn := terraform.OutputAll(t, terraformOptions)["eks_node_group_arn"]
+	assert.Empty(t, eksNodeGroupArn, "When disabled, module should have no outputs.")
+
+	// Get all the output and lookup a field. Pass if the field is missing or empty.
+	eksFargateProfileArn := terraform.OutputAll(t, terraformOptions)["eks_fargate_profile_arn"]
+	assert.Empty(t, eksFargateProfileArn, "When disabled, module should have no outputs.")
 }
