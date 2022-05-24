@@ -15,14 +15,14 @@ variable "vpc_cidr_block" {
 
 variable "kubernetes_version" {
   type        = string
-  default     = null
   description = "Desired Kubernetes master version. If you do not specify a value, the latest available version is used"
+  default     = null
 }
 
 variable "oidc_provider_enabled" {
   type        = bool
-  default     = false
   description = "Create an IAM OIDC identity provider for the cluster, then you can create IAM roles to associate with a service account in the cluster, instead of using kiam or kube2iam. For more information, see https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html"
+  default     = false
 }
 
 variable "kubernetes_namespace" {
@@ -67,20 +67,20 @@ variable "iam_role_kubernetes_namespace_delimiter" {
 
 variable "local_exec_interpreter" {
   type        = list(string)
-  default     = ["/bin/sh", "-c"]
   description = "shell to use for local_exec"
+  default     = ["/bin/sh", "-c"]
 }
 
 variable "enabled_cluster_log_types" {
   type        = list(string)
-  default     = []
   description = "A list of the desired control plane logging to enable. For more information, see https://docs.aws.amazon.com/en_us/eks/latest/userguide/control-plane-logs.html. Possible values [`api`, `audit`, `authenticator`, `controllerManager`, `scheduler`]"
+  default     = []
 }
 
 variable "cluster_log_retention_period" {
   type        = number
+  description = "Number of days to retain cluster logs. Requires `enabled_cluster_log_types` to be set. See https://docs.aws.amazon.com/en_us/eks/latest/userguide/control-plane-logs.html"
   default     = 0
-  description = "Number of days to retain cluster logs. Requires `enabled_cluster_log_types` to be set. See https://docs.aws.amazon.com/en_us/eks/latest/userguide/control-plane-logs.html."
 }
 
 variable "kubernetes_taints" {
@@ -99,7 +99,6 @@ variable "kubernetes_taints" {
 
 variable "ec2_ssh_key_name" {
   type        = list(string)
-  default     = []
   description = "SSH key pair name to use to access the worker nodes"
   validation {
     condition = (
@@ -107,20 +106,20 @@ variable "ec2_ssh_key_name" {
     )
     error_message = "You may not specify more than one `ec2_ssh_key_name`."
   }
+  default = []
 }
 
 variable "update_config" {
   type        = list(map(number))
-  default     = []
   description = <<-EOT
     Configuration for the `eks_node_group` [`update_config` Configuration Block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group#update_config-configuration-block).
     Specify exactly one of `max_unavailable` (node count) or `max_unavailable_percentage` (percentage of nodes).
     EOT
+  default     = []
 }
 
 variable "after_cluster_joining_userdata" {
   type        = list(string)
-  default     = []
   description = "Additional `bash` commands to execute on each worker node after joining the EKS cluster (after executing the `bootstrap.sh` script). For more info, see https://kubedex.com/90-days-of-aws-eks-in-production"
   validation {
     condition = (
@@ -128,6 +127,7 @@ variable "after_cluster_joining_userdata" {
     )
     error_message = "You may not specify more than one `after_cluster_joining_userdata`."
   }
+  default = []
 }
 
 variable "ami_type" {
@@ -136,18 +136,17 @@ variable "ami_type" {
     Type of Amazon Machine Image (AMI) associated with the EKS Node Group.
     Defaults to `AL2_x86_64`. Valid values: `AL2_x86_64`, `AL2_x86_64_GPU`, `AL2_ARM_64`, `BOTTLEROCKET_x86_64`, and `BOTTLEROCKET_ARM_64`.
     EOT
-  default     = "AL2_x86_64"
   validation {
     condition = (
       contains(["AL2_x86_64", "AL2_x86_64_GPU", "AL2_ARM_64", "BOTTLEROCKET_x86_64", "BOTTLEROCKET_ARM_64"], var.ami_type)
     )
     error_message = "Var ami_type must be one of \"AL2_x86_64\", \"AL2_x86_64_GPU\", \"AL2_ARM_64\", \"BOTTLEROCKET_x86_64\", and \"BOTTLEROCKET_ARM_64\"."
   }
+  default = "AL2_x86_64"
 }
 
 variable "ami_release_version" {
   type        = list(string)
-  default     = []
   description = "EKS AMI version to use, e.g. \"1.16.13-20200821\" (no \"v\"). Defaults to latest version for Kubernetes version."
   validation {
     condition = (
@@ -155,10 +154,23 @@ variable "ami_release_version" {
     )
     error_message = "Var ami_release_version, if supplied, must be like  \"1.16.13-20200821\" (no \"v\")."
   }
+  default = []
 }
 
 variable "before_cluster_joining_userdata" {
   type        = string
-  default     = ""
   description = "Additional commands to execute on each worker node before joining the EKS cluster (before executing the `bootstrap.sh` script). For more info, see https://kubedex.com/90-days-of-aws-eks-in-production"
+  default     = ""
+}
+
+variable "fargate_profile_name" {
+  type        = string
+  description = "Fargate profile name. If not provided, will be derived from the context"
+  default     = null
+}
+
+variable "fargate_profile_iam_role_name" {
+  type        = string
+  description = "Fargate profile IAM role name. If not provided, will be derived from the context"
+  default     = null
 }

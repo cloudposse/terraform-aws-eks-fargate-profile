@@ -182,6 +182,8 @@ module "eks_fargate_profile" {
   kubernetes_namespace                    = var.kubernetes_namespace
   kubernetes_labels                       = var.kubernetes_labels
   iam_role_kubernetes_namespace_delimiter = var.iam_role_kubernetes_namespace_delimiter
+  fargate_profile_name                    = var.fargate_profile_name
+  fargate_profile_iam_role_name           = var.fargate_profile_iam_role_name
 
   context = module.this.context
 }
