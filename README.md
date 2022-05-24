@@ -160,12 +160,12 @@ For automated tests of the complete example using [bats](https://github.com/bats
   
   module "subnets" {
     source  = "cloudposse/dynamic-subnets/aws"
-    version = "2.0.2"
+    version = "1.0.0"
   
     availability_zones   = var.availability_zones
     vpc_id               = module.vpc.vpc_id
-    igw_id               = [module.vpc.igw_id]
-    ipv4_cidr_block      = [module.vpc.vpc_cidr_block]
+    igw_id               = module.vpc.igw_id
+    cidr_block           = module.vpc.vpc_cidr_block
     nat_gateway_enabled  = true
     nat_instance_enabled = false
     tags                 = local.tags
@@ -175,7 +175,7 @@ For automated tests of the complete example using [bats](https://github.com/bats
   
   module "ssh_source_access" {
     source  = "cloudposse/security-group/aws"
-    version = "0.4.3"
+    version = "1.0.1"
   
     attributes                 = ["ssh", "source"]
     security_group_description = "Test source security group ssh access only"
@@ -191,7 +191,7 @@ For automated tests of the complete example using [bats](https://github.com/bats
   
   module "https_sg" {
     source  = "cloudposse/security-group/aws"
-    version = "0.4.3"
+    version = "1.0.1"
   
     attributes                 = ["http"]
     security_group_description = "Allow http access"
@@ -303,7 +303,7 @@ Available targets:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.1.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.14 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.71.0 |
 
 ## Providers

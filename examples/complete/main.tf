@@ -65,12 +65,12 @@ module "vpc" {
 
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "2.0.2"
+  version = "1.0.0"
 
   availability_zones = var.availability_zones
   vpc_id             = module.vpc.vpc_id
-  igw_id             = [module.vpc.igw_id]
-  ipv4_cidr_block    = [module.vpc.vpc_cidr_block]
+  igw_id             = module.vpc.igw_id
+  cidr_block         = module.vpc.vpc_cidr_block
 
   # Need to create NAT gateway since the Fargate nodes are provisioned only in private subnets, and the nodes need to join the cluster
   nat_gateway_enabled  = true
@@ -83,7 +83,7 @@ module "subnets" {
 
 module "ssh_source_access" {
   source  = "cloudposse/security-group/aws"
-  version = "0.4.3"
+  version = "1.0.1"
 
   attributes                 = ["ssh", "source"]
   security_group_description = "Test source security group ssh access only"
@@ -99,7 +99,7 @@ module "ssh_source_access" {
 
 module "https_sg" {
   source  = "cloudposse/security-group/aws"
-  version = "0.4.3"
+  version = "1.0.1"
 
   attributes                 = ["http"]
   security_group_description = "Allow http access"
