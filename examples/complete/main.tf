@@ -134,7 +134,7 @@ module "eks_node_group" {
   source  = "cloudposse/eks-node-group/aws"
   version = "2.4.0"
 
-  subnet_ids                    = module.this.enabled ? module.subnets.public_subnet_ids : ["filler_string_for_enabled_is_false"]
+  subnet_ids                    = module.subnets.public_subnet_ids
   cluster_name                  = module.eks_cluster.eks_cluster_id
   instance_types                = var.instance_types
   desired_size                  = var.desired_size
@@ -174,7 +174,7 @@ module "eks_node_group" {
 module "eks_fargate_profile" {
   source = "../../"
 
-  subnet_ids                              = module.subnets.private_subnet_ids
+  subnet_ids                              = module.subnets.public_subnet_ids
   cluster_name                            = module.eks_cluster.eks_cluster_id
   kubernetes_namespace                    = var.kubernetes_namespace
   kubernetes_labels                       = var.kubernetes_labels

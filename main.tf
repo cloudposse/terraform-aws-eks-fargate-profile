@@ -38,7 +38,8 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "default" {
-  count                = local.enabled ? 1 : 0
+  count = local.enabled ? 1 : 0
+
   name                 = "${module.label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}"
   assume_role_policy   = join("", data.aws_iam_policy_document.assume_role.*.json)
   tags                 = module.label.tags
@@ -46,13 +47,15 @@ resource "aws_iam_role" "default" {
 }
 
 resource "aws_iam_role_policy_attachment" "amazon_eks_fargate_pod_execution_role_policy" {
-  count      = local.enabled ? 1 : 0
+  count = local.enabled ? 1 : 0
+
   policy_arn = "arn:${join("", data.aws_partition.current.*.partition)}:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
   role       = join("", aws_iam_role.default.*.name)
 }
 
 resource "aws_eks_fargate_profile" "default" {
-  count                  = local.enabled ? 1 : 0
+  count = local.enabled ? 1 : 0
+
   cluster_name           = var.cluster_name
   fargate_profile_name   = module.label.id
   pod_execution_role_arn = join("", aws_iam_role.default.*.arn)
