@@ -174,7 +174,7 @@ module "eks_node_group" {
 module "eks_fargate_profile" {
   source = "../../"
 
-  subnet_ids                              = module.subnets.public_subnet_ids
+  subnet_ids                              = module.subnets.private_subnet_ids
   cluster_name                            = module.eks_cluster.eks_cluster_id
   kubernetes_namespace                    = var.kubernetes_namespace
   kubernetes_labels                       = var.kubernetes_labels
