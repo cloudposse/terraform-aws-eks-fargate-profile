@@ -4,8 +4,8 @@ variable "cluster_name" {
 }
 
 variable "subnet_ids" {
-  description = "Identifiers of private EC2 Subnets to associate with the EKS Fargate Profile. These subnets must have the following resource tag: kubernetes.io/cluster/CLUSTER_NAME (where CLUSTER_NAME is replaced with the name of the EKS Cluster)"
   type        = list(string)
+  description = "Identifiers of private EC2 Subnets to associate with the EKS Fargate Profile. These subnets must have the following resource tag: kubernetes.io/cluster/CLUSTER_NAME (where CLUSTER_NAME is replaced with the name of the EKS Cluster)"
 }
 
 variable "kubernetes_namespace" {
@@ -27,6 +27,18 @@ variable "iam_role_kubernetes_namespace_delimiter" {
 
 variable "permissions_boundary" {
   type        = string
+  description = "If provided, all IAM roles will be created with this permissions boundary attached"
   default     = null
-  description = "If provided, all IAM roles will be created with this permissions boundary attached."
+}
+
+variable "fargate_profile_name" {
+  type        = string
+  description = "Fargate profile name. If not provided, will be derived from the context"
+  default     = null
+}
+
+variable "fargate_profile_iam_role_name" {
+  type        = string
+  description = "Fargate profile IAM role name. If not provided, will be derived from the context"
+  default     = null
 }

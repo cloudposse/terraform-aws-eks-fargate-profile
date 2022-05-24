@@ -143,7 +143,7 @@ func TestExamplesComplete(t *testing.T) {
 	// Run `terraform output` to get the value of an output variable
 	eksFargateProfileId := terraform.Output(t, terraformOptions, "eks_fargate_profile_id")
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-cluster:eg-test-eks-fargate-"+randID+"-fargate", eksFargateProfileId)
+	assert.Equal(t, "eg-test-eks-fargate-"+randID+"-cluster:eg-test-eks-fargate-"+randID+"-default", eksFargateProfileId)
 
 	// Run `terraform output` to get the value of an output variable
 	eksFargateProfileRoleName := terraform.Output(t, terraformOptions, "eks_fargate_profile_role_name")
