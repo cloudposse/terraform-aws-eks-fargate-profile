@@ -26,7 +26,7 @@ kubernetes_namespace = "default"
 
 kubernetes_labels = {}
 
-kubernetes_version = "1.21"
+kubernetes_version = "1.22"
 
 oidc_provider_enabled = true
 
