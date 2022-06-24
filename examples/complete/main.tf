@@ -20,7 +20,15 @@ locals {
   # for EKS and Kubernetes to discover and manage networking resources
   # https://www.terraform.io/docs/providers/aws/guides/eks-getting-started.html#base-vpc-networking
   tags = try(merge(module.label.tags, tomap("kubernetes.io/cluster/${module.label.id}", "shared")), null)
-
+    
+  # required tags to make ALB ingress work https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html
+  public_subnets_additional_tags = {
+    "kubernetes.io/role/elb" : 1
+  }
+  private_subnets_additional_tags = {
+    "kubernetes.io/role/internal-elb" : 1
+  } 
+    rmkellogg/terraform-aws-eks-cluster
   # Unfortunately, most_recent (https://github.com/cloudposse/terraform-aws-eks-workers/blob/34a43c25624a6efb3ba5d2770a601d7cb3c0d391/main.tf#L141)
   # variable does not work as expected, if you are not going to use custom ami you should
   # enforce usage of eks_worker_ami_name_filter variable to set the right kubernetes version for EKS workers,
@@ -77,7 +85,9 @@ module "subnets" {
   nat_instance_enabled = false
 
   tags = local.tags
-
+  public_subnets_additional_tags  = local.public_subnets_additional_tags
+  private_subnets_additional_tags = local.private_subnets_additional_tags
+    
   context = module.this.context
 }
 
