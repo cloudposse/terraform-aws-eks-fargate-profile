@@ -60,7 +60,7 @@ resource "aws_iam_role" "default" {
   count = local.enabled ? 1 : 0
 
   name                 = local.fargate_profile_iam_role_name
-  assume_role_policy   = join("", data.aws_iam_policy_document.assume_role.*.json)
+  assume_role_policy   = join("", data.aws_iam_policy_document.assume_role[*].json)
   tags                 = module.role_label.tags
   permissions_boundary = var.permissions_boundary
 }
@@ -68,8 +68,8 @@ resource "aws_iam_role" "default" {
 resource "aws_iam_role_policy_attachment" "amazon_eks_fargate_pod_execution_role_policy" {
   count = local.enabled ? 1 : 0
 
-  policy_arn = "arn:${join("", data.aws_partition.current.*.partition)}:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
-  role       = join("", aws_iam_role.default.*.name)
+  policy_arn = "arn:${join("", data.aws_partition.current[*].partition)}:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+  role       = join("", aws_iam_role.default[*].name)
 }
 
 resource "aws_eks_fargate_profile" "default" {
@@ -77,7 +77,7 @@ resource "aws_eks_fargate_profile" "default" {
 
   cluster_name           = var.cluster_name
   fargate_profile_name   = local.fargate_profile_name
-  pod_execution_role_arn = join("", aws_iam_role.default.*.arn)
+  pod_execution_role_arn = join("", aws_iam_role.default[*].arn)
   subnet_ids             = var.subnet_ids
   tags                   = module.fargate_profile_label.tags
 
