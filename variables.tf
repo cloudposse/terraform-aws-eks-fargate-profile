@@ -48,7 +48,7 @@ variable "fargate_profile_iam_role_name" {
 
 variable "fargate_pod_execution_role_name" {
   type        = string
-  description = "Fargate profile IAM role name. If not provided, will be derived from the context"
+  description = "Fargate Pod Execution Role name. If not provided, will be derived from the context"
   default     = null
 }
 

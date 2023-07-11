@@ -142,7 +142,7 @@ module "eks_node_group" {
   version = "2.10.0"
 
   subnet_ids                    = module.this.enabled ? module.subnets.public_subnet_ids : ["filler_string_for_enabled_is_false"]
-  cluster_name                  = coalesce(module.eks_cluster.eks_cluster_id, "disabled")
+  cluster_name                  = module.this.enabled ? module.eks_cluster.eks_cluster_id : "disabled"
   instance_types                = var.instance_types
   desired_size                  = var.desired_size
   min_size                      = var.min_size
