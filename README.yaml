@@ -65,10 +65,16 @@ related:
 # Short description of this project
 description: |-
   Terraform module to provision an [AWS Fargate Profile](https://docs.aws.amazon.com/eks/latest/userguide/fargate-profile.html) 
-  for [EKS](https://aws.amazon.com/eks/).
+  and Fargate Pod Execution Role for [EKS](https://aws.amazon.com/eks/).
 
-introduction: ""
-# How to use this project
+introduction: |-
+  By default, this module will provision an [AWS Fargate Profile](https://docs.aws.amazon.com/eks/latest/userguide/fargate-profile.html) 
+  and Fargate Pod Execution Role for [EKS](https://aws.amazon.com/eks/). 
+  
+  Note that in general, you only need one Fargate Pod Execution Role per AWS account, 
+  and it can be shared across regions. So if you are creating multiple Faragte Profiles, 
+  you can reuse the role created by the first one, or instantiate this module with 
+  `fargate_profile_enabled = false` to create the role separate from the profile. 
 
 usage: |2-
 
