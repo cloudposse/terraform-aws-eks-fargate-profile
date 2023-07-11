@@ -55,26 +55,32 @@ locals {
 
 module "vpc" {
   source  = "cloudposse/vpc/aws"
-  version = "1.1.0"
+  version = "2.0.0"
 
-  cidr_block = var.vpc_cidr_block
-  tags       = local.tags
+  ipv4_primary_cidr_block = var.vpc_cidr_block
+  tags                    = local.tags
 
   context = module.this.context
 }
 
 module "subnets" {
   source  = "cloudposse/dynamic-subnets/aws"
-  version = "1.0.0"
+  version = "2.4.1"
 
   availability_zones = var.availability_zones
   vpc_id             = module.vpc.vpc_id
-  igw_id             = module.vpc.igw_id
-  cidr_block         = module.vpc.vpc_cidr_block
+  igw_id             = [module.vpc.igw_id]
+  ipv4_cidr_block    = [module.vpc.vpc_cidr_block]
 
   # Need to create NAT gateway since the Fargate nodes are provisioned only in private subnets, and the nodes need to join the cluster
   nat_gateway_enabled  = true
+  max_nats             = 1
   nat_instance_enabled = false
+
+  route_create_timeout = "5m"
+  route_delete_timeout = "10m"
+
+  subnet_type_tag_key = "cpco.io/subnet/type"
 
   tags = local.tags
 
@@ -83,11 +89,10 @@ module "subnets" {
 
 module "ssh_source_access" {
   source  = "cloudposse/security-group/aws"
-  version = "1.0.1"
+  version = "2.2.0"
 
   attributes                 = ["ssh", "source"]
   security_group_description = "Test source security group ssh access only"
-  create_before_destroy      = true
   allow_all_egress           = true
 
   rules = [local.allow_all_ingress_rule]
@@ -99,11 +104,10 @@ module "ssh_source_access" {
 
 module "https_sg" {
   source  = "cloudposse/security-group/aws"
-  version = "1.0.1"
+  version = "2.2.0"
 
   attributes                 = ["http"]
   security_group_description = "Allow http access"
-  create_before_destroy      = true
   allow_all_egress           = true
 
   rules = [local.allow_http_ingress_rule]
@@ -115,7 +119,7 @@ module "https_sg" {
 
 module "eks_cluster" {
   source  = "cloudposse/eks-cluster/aws"
-  version = "2.2.0"
+  version = "2.8.1"
 
   region                       = var.region
   vpc_id                       = module.vpc.vpc_id
@@ -135,10 +139,10 @@ module "eks_cluster" {
 
 module "eks_node_group" {
   source  = "cloudposse/eks-node-group/aws"
-  version = "2.4.0"
+  version = "2.10.0"
 
   subnet_ids                    = module.this.enabled ? module.subnets.public_subnet_ids : ["filler_string_for_enabled_is_false"]
-  cluster_name                  = module.eks_cluster.eks_cluster_id
+  cluster_name                  = coalesce(module.eks_cluster.eks_cluster_id, "disabled")
   instance_types                = var.instance_types
   desired_size                  = var.desired_size
   min_size                      = var.min_size

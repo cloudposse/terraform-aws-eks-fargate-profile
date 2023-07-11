@@ -1,16 +1,19 @@
 variable "cluster_name" {
   type        = string
   description = "The name of the EKS cluster"
+  default     = ""
 }
 
 variable "subnet_ids" {
   type        = list(string)
   description = "Identifiers of private EC2 Subnets to associate with the EKS Fargate Profile. These subnets must have the following resource tag: kubernetes.io/cluster/CLUSTER_NAME (where CLUSTER_NAME is replaced with the name of the EKS Cluster)"
+  default     = []
 }
 
 variable "kubernetes_namespace" {
   type        = string
   description = "Kubernetes namespace for selection"
+  default     = ""
 }
 
 variable "kubernetes_labels" {
@@ -39,6 +42,30 @@ variable "fargate_profile_name" {
 
 variable "fargate_profile_iam_role_name" {
   type        = string
+  description = "DEPRECATED (use `fargate_pod_execution_role_name` instead): Fargate profile IAM role name. If not provided, will be derived from the context"
+  default     = null
+}
+
+variable "fargate_pod_execution_role_name" {
+  type        = string
   description = "Fargate profile IAM role name. If not provided, will be derived from the context"
+  default     = null
+}
+
+variable "fargate_profile_enabled" {
+  type        = bool
+  description = "Set false to disable the Fargate Profile creation"
+  default     = true
+}
+
+variable "fargate_pod_execution_role_enabled" {
+  type        = bool
+  description = "Set false to disable the Fargate Pod Execution Role creation"
+  default     = true
+}
+
+variable "fargate_pod_execution_role_arn" {
+  type        = string
+  description = "ARN of the Fargate Pod Execution Role. Required if `fargate_pod_execution_role_enabled` is `false`, otherwise ignored."
   default     = null
 }
