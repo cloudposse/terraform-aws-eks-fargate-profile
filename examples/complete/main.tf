@@ -191,3 +191,45 @@ module "eks_fargate_profile" {
 
   context = module.this.context
 }
+
+# Verify that when disabled, the module tolerates bad inputs
+# No explicit test needed, it is sufficient to verify that the apply does not fail
+module "eks_fargate_profile_disabled_profile" {
+  count  = module.this.enabled ? 0 : 1
+  source = "../../"
+
+  subnet_ids                              = null
+  cluster_name                            = null
+  kubernetes_namespace                    = null
+  kubernetes_labels                       = null
+  iam_role_kubernetes_namespace_delimiter = null
+  fargate_profile_name                    = null
+  fargate_profile_iam_role_name           = null
+  fargate_pod_execution_role_arn          = null
+
+  fargate_pod_execution_role_enabled = false
+  fargate_profile_enabled            = true
+
+  context = module.this.context
+}
+
+# Verify that when disabled, the module tolerates bad inputs
+module "eks_fargate_profile_disabled_role" {
+  count  = module.this.enabled ? 0 : 1
+  source = "../../"
+
+  subnet_ids                              = null
+  cluster_name                            = null
+  kubernetes_namespace                    = null
+  kubernetes_labels                       = null
+  iam_role_kubernetes_namespace_delimiter = null
+  fargate_profile_name                    = null
+  fargate_profile_iam_role_name           = null
+  fargate_pod_execution_role_arn          = null
+
+  fargate_pod_execution_role_enabled = true
+  fargate_profile_enabled            = false
+
+  context = module.this.context
+}
+

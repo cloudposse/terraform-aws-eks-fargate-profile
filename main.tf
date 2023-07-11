@@ -15,7 +15,7 @@ locals {
   fargate_profile_name = var.fargate_profile_name != null ? var.fargate_profile_name : module.fargate_profile_label.id
 
   fargate_profile_iam_role_name = local.fargate_pod_execution_role_name != null ? local.fargate_pod_execution_role_name : (
-    var.fargate_profile_enabled ? "${module.role_label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}" :
+    local.fargate_profile_enabled ? "${module.role_label.id}${var.iam_role_kubernetes_namespace_delimiter}${var.kubernetes_namespace}" :
   module.role_label.id)
 }
 
