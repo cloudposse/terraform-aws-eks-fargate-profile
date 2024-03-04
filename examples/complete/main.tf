@@ -119,7 +119,7 @@ module "https_sg" {
 
 module "eks_cluster" {
   source  = "cloudposse/eks-cluster/aws"
-  version = "2.8.1"
+  version = "2.9.0"
 
   region                       = var.region
   vpc_id                       = module.vpc.vpc_id
