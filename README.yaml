@@ -17,13 +17,17 @@ github_repo: cloudposse/terraform-aws-eks-fargate-profile
 
 # Badges to display
 badges:
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg"
-    url: "https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/badge.svg"
-    url: "https://slack.cloudposse.com"
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest
+  - name: Last Updated
+    image: https://img.shields.io/github/last-commit/cloudposse/terraform-aws-eks-fargate-profile.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-eks-fargate-profile/commits
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
 
+# List any related terraform modules that this module may be used with or that this module depends on.
 related:
   - name: "terraform-aws-eks-cluster"
     description: "Terraform module to provision an EKS cluster on AWS"
@@ -70,7 +74,7 @@ description: |-
 introduction: |-
   By default, this module will provision an [AWS Fargate Profile](https://docs.aws.amazon.com/eks/latest/userguide/fargate-profile.html) 
   and Fargate Pod Execution Role for [EKS](https://aws.amazon.com/eks/). 
-  
+
   Note that in general, you only need one Fargate Pod Execution Role per AWS account, 
   and it can be shared across regions. So if you are creating multiple Faragte Profiles, 
   you can reuse the role created by the first one, or instantiate this module with 
@@ -265,10 +269,4 @@ include:
   - "docs/terraform.md"
 
 # Contributors to this project
-contributors:
-  - name: "Erik Osterman"
-    github: "osterman"
-  - name: "Andriy Knysh"
-    github: "aknysh"
-  - name: "Igor Rodionov"
-    github: "goruha"
+contributors: []
