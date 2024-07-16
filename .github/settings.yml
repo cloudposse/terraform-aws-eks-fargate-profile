@@ -5,3 +5,4 @@ repository:
   description: Terraform module to provision an EKS Fargate Profile
   homepage: https://cloudposse.com/accelerate
   topics: ""
+
