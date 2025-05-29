@@ -3,7 +3,7 @@
 <!-- markdownlint-disable -->
 <a href="https://cpco.io/homepage"><img src="https://github.com/cloudposse/terraform-aws-eks-fargate-profile/blob/main/.github/banner.png?raw=true" alt="Project Banner"/></a><br/>
     <p align="right">
-<a href="https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest"><img src="https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg?style=for-the-badge" alt="Latest Release"/></a><a href="https://github.com/cloudposse/terraform-aws-eks-fargate-profile/commits"><img src="https://img.shields.io/github/last-commit/cloudposse/terraform-aws-eks-fargate-profile.svg?style=for-the-badge" alt="Last Updated"/></a><a href="https://slack.cloudposse.com"><img src="https://slack.cloudposse.com/for-the-badge.svg" alt="Slack Community"/></a></p>
+<a href="https://github.com/cloudposse/terraform-aws-eks-fargate-profile/releases/latest"><img src="https://img.shields.io/github/release/cloudposse/terraform-aws-eks-fargate-profile.svg?style=for-the-badge" alt="Latest Release"/></a><a href="https://github.com/cloudposse/terraform-aws-eks-fargate-profile/commits"><img src="https://img.shields.io/github/last-commit/cloudposse/terraform-aws-eks-fargate-profile.svg?style=for-the-badge" alt="Last Updated"/></a><a href="https://cloudposse.com/slack"><img src="https://slack.cloudposse.com/for-the-badge.svg" alt="Slack Community"/></a></p>
 <!-- markdownlint-restore -->
 
 <!--
@@ -255,18 +255,6 @@ For automated tests of the complete example using [bats](https://github.com/bats
 
 
 <!-- markdownlint-disable -->
-## Makefile Targets
-```text
-Available targets:
-
-  help                                Help screen
-  help/all                            Display help for all targets
-  help/short                          This help short screen
-  lint                                Lint terraform code
-
-```
-<!-- markdownlint-restore -->
-<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -345,6 +333,11 @@ Available targets:
 | <a name="output_eks_fargate_profile_role_name"></a> [eks\_fargate\_profile\_role\_name](#output\_eks\_fargate\_profile\_role\_name) | DEPRECATED (use `eks_fargate_pod_execution_role_name` instead): Name of the EKS Fargate Profile IAM role |
 | <a name="output_eks_fargate_profile_status"></a> [eks\_fargate\_profile\_status](#output\_eks\_fargate\_profile\_status) | Status of the EKS Fargate Profile |
 <!-- markdownlint-restore -->
+
+
+
+
+
 
 
 ## Related Projects
