@@ -25,7 +25,8 @@ module "fargate_profile_label" {
 
   enabled = local.fargate_profile_enabled
   # Append the provided Kubernetes namespace to the Fargate Profile name
-  attributes = [var.kubernetes_namespace]
+  attributes      = [var.kubernetes_namespace]
+  id_length_limit = 62
 
   tags = local.tags
 
@@ -38,7 +39,8 @@ module "role_label" {
 
   enabled = local.fargate_pod_execution_role_enabled
   # Append 'fargate' to the Fargate Role name to specify that the role is for Fargate
-  attributes = ["fargate"]
+  attributes      = ["fargate"]
+  id_length_limit = 64
 
   tags = local.tags
 
