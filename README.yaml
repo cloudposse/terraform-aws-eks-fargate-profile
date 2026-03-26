@@ -78,7 +78,14 @@ introduction: |-
   Note that in general, you only need one Fargate Pod Execution Role per AWS account, 
   and it can be shared across regions. So if you are creating multiple Faragte Profiles, 
   you can reuse the role created by the first one, or instantiate this module with 
-  `fargate_profile_enabled = false` to create the role separate from the profile. 
+  `fargate_profile_enabled = false` to create the role separate from the profile.
+
+  ### EKS Auto Mode Compatibility
+
+  Fargate profiles are fully compatible with
+  [EKS Auto Mode](https://docs.aws.amazon.com/eks/latest/userguide/automode.html) clusters.
+  No changes are required -- Fargate pods run independently of Auto Mode compute.
+  Fargate remains useful for workload isolation use cases even with Auto Mode enabled.
 
 usage: |2-
 
