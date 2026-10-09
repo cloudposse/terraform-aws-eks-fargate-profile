@@ -55,7 +55,7 @@ locals {
 
 module "vpc" {
   source  = "cloudposse/vpc/aws"
-  version = "2.1.0"
+  version = "2.3.0"
 
   ipv4_primary_cidr_block = var.vpc_cidr_block
   tags                    = local.tags
